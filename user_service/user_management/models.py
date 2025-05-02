@@ -8,3 +8,9 @@ class Customer(models.Model):
    province = models.CharField(max_length=100, blank=True)
    post_code = models.CharField(max_length=5, blank=True)
    tel = models.CharField(max_length=20, blank=True)
+
+class News(models.Model):
+   title = models.CharField(max_length=255, blank=True)
+   content = models.TextField(blank=True)
+   created_at = models.DateTimeField(auto_now_add=True)
+   updated_at = models.DateTimeField(auto_now=True)
