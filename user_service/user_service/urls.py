@@ -1,7 +1,12 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from user_management.views import *
+from user_management.views import (
+    register, CustomerView, CategoryViewSet, NewsViewSet, NewsListView,
+    NewsDetailView, NewsLikeViewSet, CommentViewSet, ConservationActivityViewSet,
+    ConservationMethodViewSet
+)
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView, 
     TokenRefreshView
@@ -9,18 +14,21 @@ from rest_framework_simplejwt.views import (
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
-router.register(r'news', NewsViewSet, basename='news')
-router.register(r'saved-news', SavedNewsViewSet, basename='savednews')
-router.register(r'likes', NewsLikeViewSet, basename='likes')
-router.register(r'conservation-activities', ConservationActivityViewSet, basename='activities')
-router.register(r'conservation-methods', ConservationMethodViewSet, basename='methods')
+router.register(r'news', NewsViewSet)
+router.register(r'news-likes', NewsLikeViewSet)
+router.register(r'comments', CommentViewSet)
+router.register(r'conservation-activities', ConservationActivityViewSet)
+router.register(r'conservation-methods', ConservationMethodViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),
     path('api/register', register),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/myinfo', CustomerView.as_view(), name='myinfo'),
-    path('api/news/<int:news_pk>/comments/', CommentViewSet.as_view({'get': 'list', 'post': 'create'})),
-    path('api/', include(router.urls)),
+    path('api/customer/', CustomerView.as_view(), name='customer'),
+    path('news/', NewsListView.as_view(), name='news_list'),
+    path('news/<str:category_name>/', NewsListView.as_view(), name='news_list_by_category'),
+    path('news/<int:year>/<int:month>/<int:day>/<slug:news_slug>/', NewsDetailView.as_view(), name='news_detail'),
 ]

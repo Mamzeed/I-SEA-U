@@ -1,22 +1,17 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import (
+from user_management.models import (
     Customer, Category, News, SavedNews, 
     NewsLike, Comment, ConservationActivity, 
     ConservationMethod
 )
-from user_management.models import Customer
-
-class CustomerSerializer(serializers.ModelSerializer):
-   class Meta:
-       model = Customer
-       fields = ['id', 'user', 'fullname', 'address', 'province', 'post_code', 'tel']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name')
-    
+
+class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ('id', 'user', 'fullname', 'address', 'province', 'post_code', 'tel')
@@ -25,22 +20,26 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name', 'description', 'created_at')
+        extra_kwargs = {'description': {'required': False}}
 
 class NewsSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
-    author = UserSerializer(read_only=True)
-    likes_count = serializers.SerializerMethodField()
-    comments_count = serializers.SerializerMethodField()
-    is_liked = serializers.SerializerMethodField()
-    is_saved = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField(read_only=True)
+    likes_count = serializers.SerializerMethodField(read_only=True)
+    comments_count = serializers.SerializerMethodField(read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
+    is_saved = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = News
         fields = (
-            'id', 'title', 'content', 'image', 'category', 
-            'author', 'created_at', 'updated_at', 'views',
+            'id', 'title', 'content', 'image', 'category', 'author', 
+            'slug', 'created_at', 'updated_at', 'views',
             'likes_count', 'comments_count', 'is_liked', 'is_saved'
         )
+
+    def get_author(self, obj):
+        return {'id': obj.author.id, 'username': obj.author.username}
 
     def get_likes_count(self, obj):
         return obj.likes.count()
