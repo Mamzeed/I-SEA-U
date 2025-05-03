@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from user_management.models import Customer
-from .models import Category, News, SavedNews, NewsLike, Comment, ConservationActivity, ConservationMethod
+from user_management.models import (
+    Customer, Category, News, SavedNews, NewsLike, 
+    Comment, ConservationActivity, ConservationMethod
+)
 
-# Register your models here.
 admin.site.register(Customer)
 
 class CustomerInline(admin.StackedInline):
@@ -31,10 +32,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'author', 'created_at', 'views')
-    search_fields = ('title', 'content', 'author__username')
+    list_display = ('title', 'slug', 'category', 'author', 'created_at', 'views')
+    search_fields = ('title', 'slug', 'content', 'author__username')
     list_filter = ('category', 'created_at', 'author')
     readonly_fields = ('views',)
+    prepopulated_fields = {'slug': ('title',)}  # อัตโนมัติสร้าง slug จาก title ใน admin
 
 @admin.register(SavedNews)
 class SavedNewsAdmin(admin.ModelAdmin):
@@ -66,6 +68,5 @@ class ConservationMethodAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description')
     list_filter = ('created_at',)
 
-# Unregister the default User admin and register our custom User admin
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
