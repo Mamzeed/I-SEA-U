@@ -17,19 +17,29 @@ from user_management.serializers import *
 def register(request):
     if request.method == "POST":
         data = JSONParser().parse(request)
+
+        required_fields = ['username', 'email', 'password', 'confirmPassword']
+        if not all(field in data for field in required_fields):
+            return JsonResponse({"error": "Missing required fields."}, status=400)
+
+        if data['password'] != data['confirmPassword']:
+            return JsonResponse({"error": "Passwords do not match."}, status=400)
+
+        if User.objects.filter(username=data['username']).exists():
+            return JsonResponse({"error": "Username already exists."}, status=400)
+
         try:
-            new_user = User.objects.create_user(username=data['username'], password=data['password'])
-        except:
-            return JsonResponse({"error": "username already used."}, status=400)
-        new_user.save()
-        data['user'] = new_user.id
-        customer_serializer = CustomerSerializer(data=data)
-        if customer_serializer.is_valid():
-            customer_serializer.save()
-            return JsonResponse(customer_serializer.data, status=201)
-        new_user.delete()
-        return JsonResponse({"error": "data not valid"}, status=400)
-    return JsonResponse({"error": "method not allowed."}, status=405)
+            new_user = User.objects.create_user(
+                username=data['username'],
+                email=data['email'],
+                password=data['password']
+            )
+            return JsonResponse({"message": "User created successfully."}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Method not allowed."}, status=405)
+
 
 class CustomerView(APIView):
     permission_classes = [IsAuthenticated]
