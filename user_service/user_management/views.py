@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
@@ -9,6 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic.list import ListView
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from .forms import CustomerForm, ExtendedUserCreationForm
+
 
 from user_management.models import *
 from user_management.serializers import *
@@ -17,30 +21,35 @@ from user_management.serializers import *
 def register(request):
     if request.method == "POST":
         data = JSONParser().parse(request)
-
-        required_fields = ['username', 'email', 'password', 'confirmPassword']
-        if not all(field in data for field in required_fields):
-            return JsonResponse({"error": "Missing required fields."}, status=400)
-
-        if data['password'] != data['confirmPassword']:
-            return JsonResponse({"error": "Passwords do not match."}, status=400)
-
-        if User.objects.filter(username=data['username']).exists():
-            return JsonResponse({"error": "Username already exists."}, status=400)
-
         try:
-            new_user = User.objects.create_user(
-                username=data['username'],
-                email=data['email'],
-                password=data['password']
-            )
-            return JsonResponse({"message": "User created successfully."}, status=201)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            new_user = User.objects.create_user(username=data['username'], password=data['password'])
+        except:
+            return JsonResponse({"error": "username already used."}, status=400)
+        new_user.save()
+        data['user'] = new_user.id
+        customer_serializer = CustomerSerializer(data=data)
+        if customer_serializer.is_valid():
+            customer_serializer.save()
+            return JsonResponse(customer_serializer.data, status=201)
+        new_user.delete()
+        return JsonResponse({"error": "data not valid"}, status=400)
+    return JsonResponse({"error": "method not allowed."}, status=405)
 
-    return JsonResponse({"error": "Method not allowed."}, status=405)
-
-
+def signup(request):
+    if request.method == 'POST':
+        user_form = ExtendedUserCreationForm(request.POST)
+        customer_form = CustomerForm(request.POST)
+        if user_form.is_valid() and customer_form.is_valid():
+            user = user_form.save()
+            customer = customer_form.save(commit=False)
+            customer.user = user
+            customer.save()
+            login(request, user)
+            return redirect('home')  # เปลี่ยนเป็น URL ของหน้า Home
+    else:
+        user_form = ExtendedUserCreationForm()
+        customer_form = CustomerForm()
+    return render(request, 'signup.html', {'user_form': user_form, 'customer_form': customer_form})
 class CustomerView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):

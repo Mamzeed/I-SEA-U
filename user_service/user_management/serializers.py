@@ -99,3 +99,27 @@ class ConservationMethodSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'steps', 
             'image', 'created_at', 'updated_at'
         )
+        
+class SignupSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        if User.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError("Username already exists.")
+        if User.objects.filter(email=data['email']).exists():
+            raise serializers.ValidationError("Email already exists.")
+        return data
+
+    def create(self, validated_data):
+        validated_data.pop('confirm_password')  # เอาออกก่อนสร้าง user
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
