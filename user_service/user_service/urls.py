@@ -12,6 +12,9 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView
 )
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
 router.register(r'news', NewsViewSet)
@@ -32,3 +35,6 @@ urlpatterns = [
     path('news/<str:category_name>/', NewsListView.as_view(), name='news_list_by_category'),
     path('news/<int:year>/<int:month>/<int:day>/<slug:news_slug>/', NewsDetailView.as_view(), name='news_detail'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -36,9 +36,9 @@ export default function HomePage() {
             className="bg-white rounded-2xl shadow-md mb-8 p-4 transition hover:scale-[1.01]"
           >
             <img
-              src={item.image}
+              src={item.image}  // ใช้ item.image แทน news.image
               alt={item.title}
-              className="w-full h-64 object-cover rounded-xl mb-4"
+              className="w-full h-64 object-cover rounded-xl"
             />
             <h2 className="text-2xl font-bold text-[#333] mb-2">{item.title}</h2>
             <p className="text-gray-700 mb-2 line-clamp-3">{item.content}</p>
