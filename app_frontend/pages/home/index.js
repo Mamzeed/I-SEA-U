@@ -1,108 +1,72 @@
-/*หน้า homepage*/
+'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
-export default function Home() {
+export default function HomePage() {
+  const [news, setNews] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:3342/api/news/')
+      .then((res) => res.json())
+      .then((data) => setNews(data))
+      .catch((err) => console.error('โหลดข่าวล้มเหลว:', err));
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#FFF6E9]">
-      <header className="relative bg-[#40A2E3] text-white px-7 py-8 shadow flex items-center justify-between w-full">
-        {/* โลโก้ตรงกลางแบบ absolute */}
-        
-        <div className="absolute left-1/2 transform -translate-x-1/2">
-          <img src="/logoiseau_w.png" alt="Logo" className="w-50" />
-        </div>
-
-        {/* รูป user ชิดขวา พร้อมลิงก์ไปยังหน้าผู้ใช้ */}
+    <div className="min-h-screen bg-[#FFF6E9] font-sans">
+      {/* Header */}
+      <div className="relative bg-[#40A2E3] text-white px-8 py-8 shadow flex items-center justify-between w-full">
         <Link href="/user">
-          <img src="/user.png" alt="user" className="w-12 mr-auto cursor-pointer" />
-        </Link>
-      </header>
-
-      <main className="p-8">
-      <div className="flex flex-wrap gap-6 mb-6 justify-center">
-
-          <Link href="/SEA1">
-            <button className="bg-white text-black px-4 py-3 rounded-full shadow mr-40
-              transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 text-2xl">
-              สิ่งแวดล้อมทางทะเล
-            </button>
-          </Link>
-
-
-
-        <Link href="/SEA2">
-          <button className="bg-white text-black px-4 py-3 rounded-full shadow mr-30
-            transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 text-2xl">
-            ภัยพิบัติทางทะเล
+          <button className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow hover:scale-105 transition">
+            โปรไฟล์ของฉัน
           </button>
         </Link>
-
-
-        <Link href="/SEA3">
-          <button className="bg-white text-black px-4 py-3 rounded-full shadow 
-            transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 text-2xl">
-            อาชญากรรมทางทะเล
-          </button>
-        </Link>
-
-
-        <Link href="/SAVE_SEA">
-          <button className="bg-white text-black px-4 py-3 rounded-full shadow ml-40
-            transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 text-2xl">
-            กิจกรรมอนุรักษ์ท้องทะเล
-          </button>
-        </Link>
-
-
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <img src="/logoiseau_w.png" alt="Logo" className="w-40" />
+        </div>
       </div>
-      <h1 className="text-5xl font-bold text-black py-4 ml-15 ">ข่าวแนะนำ</h1>
 
+      {/* News List */}
+      <div className="px-6 mt-10">
+        <h1 className="text-3xl font-bold text-center mb-6">ข่าวล่าสุด</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-7 mt-7">
+        {news.map((item) => (
+          <div
+            key={item.id}
+            className="bg-white rounded-2xl shadow-md mb-8 p-4 transition hover:scale-[1.01]"
+          >
+            <img
+              src={item.image}
+              alt={item.title}
+              className="w-full h-64 object-cover rounded-xl mb-4"
+            />
+            <h2 className="text-2xl font-bold text-[#333] mb-2">{item.title}</h2>
+            <p className="text-gray-700 mb-2 line-clamp-3">{item.content}</p>
 
-          {/* ข่าว 1: ขยายเต็มความกว้าง */}
-          <Link href="/news" className="lg:col-span-3 block">
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 cursor-pointer">
-              <img src="/news1.jpg" alt="ข่าว 1" className="w-full h-64 object-cover" />
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-black">หัวข้อข่าว 1</h3>
-                <p className="text-gray-600">รายละเอียดสั้น ๆ ของข่าวนี้...</p>
+            <div className="flex justify-between text-sm text-gray-500 mt-2">
+              <div>
+                โดย <span className="font-semibold">{item.author.username}</span>
               </div>
+              <div>{new Date(item.created_at).toLocaleDateString('th-TH')}</div>
             </div>
-          </Link>
 
-
-          {/* ข่าว 2 */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1">
-            <img src="/news2.jpg" alt="ข่าว 2" className="w-full h-48 object-cover" />
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-black">หัวข้อข่าว 2</h3>
-              <p className="text-gray-600">รายละเอียดสั้น ๆ ของข่าวนี้...</p>
+            <div className="flex gap-6 text-sm text-gray-600 mt-3">
+              <span>❤️ {item.likes_count}</span>
+              <span>💬 {item.comments_count}</span>
+              <span>👁️ {item.views}</span>
             </div>
+
+            <Link
+              href={`/news/${item.created_at.slice(0, 10)}/${item.slug}`}
+              className="inline-block mt-4"
+            >
+              <button className="bg-[#40A2E3] text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition">
+                อ่านเพิ่มเติม
+              </button>
+            </Link>
           </div>
-
-          {/* ข่าว 3 */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1">
-            <img src="/news3.jpg" alt="ข่าว 3" className="w-full h-48 object-cover" />
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-black">หัวข้อข่าว 3</h3>
-              <p className="text-gray-600">รายละเอียดสั้น ๆ ของข่าวนี้...</p>
-            </div>
-          </div>
-
-          {/* ข่าว 4 */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1">
-            <img src="/news4.jpg" alt="ข่าว 4" className="w-full h-48 object-cover" />
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-black">หัวข้อข่าว 4</h3>
-              <p className="text-gray-600">รายละเอียดสั้น ๆ ของข่าวนี้...</p>
-            </div>
-          </div>
-
+        ))}
       </div>
-
-    </main>
-
     </div>
   );
 }
