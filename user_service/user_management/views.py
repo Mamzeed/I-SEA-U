@@ -100,6 +100,7 @@ class NewsListView(ListView):
 
 class NewsDetailView(APIView):
     def get(self, request, year, month, day, news_slug, format=None):
+        # ดึงข้อมูลข่าวที่ตรงกับวันที่และ slug
         news = get_object_or_404(
             News,
             slug=news_slug,
@@ -107,14 +108,22 @@ class NewsDetailView(APIView):
             created_at__month=month,
             created_at__day=day,
         )
+        # เพิ่มจำนวนการดูข่าว
         news.views += 1
         news.save()
+
+        # ดึงข้อมูลประเภทข่าวทั้งหมด
         categories = Category.objects.all()
-        context = {
-            'news': news,
-            'categories': categories,
-        }
-        return render(request, 'news/news_detail.html', context)
+
+        # ใช้ serializer เพื่อแปลงข้อมูลเป็น JSON
+        news_serializer = NewsSerializer(news)
+        categories_serializer = CategorySerializer(categories, many=True)
+
+        # ส่งข้อมูลกลับเป็น JSON response
+        return Response({
+            'news': news_serializer.data,
+            'categories': categories_serializer.data
+        })
 
 class NewsLikeViewSet(viewsets.ModelViewSet):
     serializer_class = NewsLikeSerializer
