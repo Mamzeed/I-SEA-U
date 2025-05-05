@@ -1,35 +1,107 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function UserPage() {
-  const [profileImage, setProfileImage] = useState('/user.png');
   const router = useRouter();
 
-  const handleImageChange = (e) => {
+  const [user, setUser] = useState(null);
+  const [profileImage, setProfileImage] = useState('/user.png');
+  const [uploading, setUploading] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  // โหลดข้อมูล user จาก API
+  useEffect(() => {
+    const stored = localStorage.getItem('user');
+    if (!stored) {
+      router.push('/login');
+      return;
+    }
+    const parsed = JSON.parse(stored);
+    if (!parsed.access) {
+      router.push('/login');
+      return;
+    }
+
+    setLoadingUser(true);
+    fetch('http://localhost:3342/api/me/', {
+      headers: { Authorization: `Bearer ${parsed.access}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          router.push('/login');
+        } else {
+          setUser({ ...data, token: parsed.access });
+          if (data.profile_image) {
+            setProfileImage(`http://localhost:3342${data.profile_image}`);
+          }
+        }
+      })
+      .catch(() => {
+        alert('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้');
+        router.push('/login');
+      })
+      .finally(() => setLoadingUser(false));
+  }, [router]);
+
+  // อัปโหลดรูปขึ้น server
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+    if (!file || !file.type.startsWith('image/')) {
+      alert('กรุณาเลือกไฟล์ภาพเท่านั้น');
+      return;
+    }
+
+    const form = new FormData();
+    form.append('profile_image', file);
+
+    setUploading(true);
+    try {
+      const res = await fetch('http://localhost:3342/api/customer/', {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: form,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Upload failed');
+      }
+
+      const updated = await res.json();
+      setProfileImage(`http://localhost:3342${updated.profile_image}`);
+      alert('อัปโหลดรูปโปรไฟล์สำเร็จ');
+    } catch (err) {
+      console.error(err);
+      alert('อัปโหลดรูปโปรไฟล์ล้มเหลว');
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleLogout = () => {
-    const confirmed = window.confirm('คุณต้องการออกจากระบบหรือไม่?');
-    if (confirmed) {
-      // TODO: ล้าง token หรือข้อมูลผู้ใช้ใน localStorage ถ้ามี
-      router.push('/'); // นำไปหน้าแรกหรือหน้า login
+    if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+      localStorage.removeItem('user');
+      router.push('/login');
     }
   };
+
+  if (loadingUser) {
+    return <div className="p-6 text-center text-gray-700">กำลังโหลดข้อมูลผู้ใช้...</div>;
+  }
+
+  if (!user) {
+    return null; // ถ้าไม่มี user จะ redirect แล้ว
+  }
 
   return (
     <div className="min-h-screen bg-[#FFF6E9] font-sans">
       {/* Header */}
-      <div className="relative bg-[#40A2E3] text-white px-8 py-8 shadow flex items-center justify-between w-full">
+      <div className="relative bg-[#40A2E3] text-white px-8 py-6 shadow flex items-center justify-between">
         <Link href="/home">
           <button className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow hover:scale-105 transition">
             &lt; หน้าหลัก
@@ -40,43 +112,37 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* User Info Section */}
-      <div className="flex flex-col items-center justify-center px-6 mt-14 text-center">
-        {/* Profile Picture */}
+      {/* Profile */}
+      <div className="flex flex-col items-center px-6 mt-12">
         <div className="relative">
           <img
             src={profileImage}
             alt="User Profile"
-            className="w-50 h-50 rounded-full shadow-lg mb-3 border-4 border-[#E8E8E8] object-cover"
+            className="w-40 h-40 rounded-full shadow-lg mb-3 border-4 border-[#E8E8E8] object-cover"
           />
-          <label className="cursor-pointer text-sm text-[#40A2E3] hover:underline mt-2 inline-block">
+          <label className="cursor-pointer text-sm text-[#40A2E3] hover:underline block">
+            {uploading ? 'กำลังอัปโหลด...' : 'เปลี่ยนรูปโปรไฟล์'}
             <input
               type="file"
               accept="image/*"
               className="hidden"
               onChange={handleImageChange}
             />
-            เปลี่ยนรูปโปรไฟล์
           </label>
         </div>
 
-        {/* Username */}
-        <h1 className="text-4xl font-bold text-black mt-15 mb-2">ชื่อผู้ใช้</h1>
+        <h1 className="text-3xl font-bold text-black mt-4">{user.username}</h1>
+        <p className="text-lg text-gray-600 mt-2">{user.email}</p>
 
-        {/* Email */}
-        <p className="text-lg text-gray-600 mt-4 mb-8">user@example.com</p>
-
-        {/* Saved News Button */}
         <Link href="/saved-news">
-          <button className="bg-[#FFD700] text-black text-lg px-6 py-3 rounded-full shadow-md hover:scale-105 transition mb-4">
+          <button className="bg-[#FFD700] text-black text-lg px-6 py-3 rounded-full shadow-md hover:scale-105 transition mt-6">
             ดูข่าวที่บันทึกไว้
           </button>
         </Link>
 
-        {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="bg-[#FF3131] text-black text-lg px-7.5 py-3 rounded-full shadow-md hover:scale-105 transition mt-2"
+          className="bg-[#FF3131] text-black text-lg px-6 py-3 rounded-full shadow-md hover:scale-105 transition mt-4"
         >
           ออกจากระบบ
         </button>

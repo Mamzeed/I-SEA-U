@@ -3,15 +3,18 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.contrib.auth.models import User
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import viewsets, generics, status
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic.list import ListView
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from .forms import CustomerForm, ExtendedUserCreationForm
+from user_management.models import News, NewsLike, Comment
+from .serializers import NewsSerializer, CategorySerializer, CustomerSerializer, NewsLikeSerializer, CommentSerializer, ConservationActivitySerializer, ConservationMethodSerializer
 
 
 from user_management.models import *
@@ -35,6 +38,12 @@ def register(request):
         return JsonResponse({"error": "data not valid"}, status=400)
     return JsonResponse({"error": "method not allowed."}, status=405)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def me(request):
+    serializer = CustomerSerializer(request.user)
+    return Response(serializer.data)
+
 def signup(request):
     if request.method == 'POST':
         user_form = ExtendedUserCreationForm(request.POST)
@@ -50,6 +59,47 @@ def signup(request):
         user_form = ExtendedUserCreationForm()
         customer_form = CustomerForm()
     return render(request, 'signup.html', {'user_form': user_form, 'customer_form': customer_form})
+
+def news_detail(request, slug):
+    try:
+        # ค้นหาข่าวที่มี slug ตรงกัน
+        news_item = News.objects.get(slug=slug)
+        # เตรียมข้อมูลที่ต้องการส่งกลับ
+        data = {
+            "title": news_item.title,
+            "content": news_item.content,
+            "image": news_item.image.url if news_item.image else None,
+            "category": news_item.category.name,
+            "author": news_item.author.username,
+            "created_at": news_item.created_at,
+            "slug": news_item.slug
+        }
+        # ส่งข้อมูลกลับเป็น JSON
+        return JsonResponse(data, status=200)
+    except News.DoesNotExist:
+        # กรณีไม่พบข่าว
+        return JsonResponse({"error": "News not found"}, status=404)
+
+def news_environment(request):
+    news = News.objects.filter(category__name="สิ่งแวดล้อมทางทะเล")
+    data = [
+        {
+            "title": item.title,
+            "content": item.content,
+            "image": item.image.url if item.image else "",
+            "slug": item.slug
+        }
+        for item in news
+    ]
+    return JsonResponse(data, safe=False)
+
+@api_view(['GET'])
+def news_by_category(request, category_name):
+    category = get_object_or_404(Category, name=category_name)
+    news = News.objects.filter(category=category).order_by('-created_at')
+    serializer = NewsSerializer(news, many=True, context={'request': request})
+    return Response(serializer.data)
+
 class CustomerView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
@@ -98,32 +148,16 @@ class NewsListView(ListView):
         context['categories'] = Category.objects.all()
         return context
 
-class NewsDetailView(APIView):
-    def get(self, request, year, month, day, news_slug, format=None):
-        # ดึงข้อมูลข่าวที่ตรงกับวันที่และ slug
-        news = get_object_or_404(
-            News,
-            slug=news_slug,
-            created_at__year=year,
-            created_at__month=month,
-            created_at__day=day,
-        )
-        # เพิ่มจำนวนการดูข่าว
-        news.views += 1
-        news.save()
+class NewsDetailView(generics.RetrieveAPIView):
+    queryset = News.objects.all()
+    serializer_class = NewsSerializer
+    lookup_field = 'slug'
 
-        # ดึงข้อมูลประเภทข่าวทั้งหมด
-        categories = Category.objects.all()
-
-        # ใช้ serializer เพื่อแปลงข้อมูลเป็น JSON
-        news_serializer = NewsSerializer(news)
-        categories_serializer = CategorySerializer(categories, many=True)
-
-        # ส่งข้อมูลกลับเป็น JSON response
-        return Response({
-            'news': news_serializer.data,
-            'categories': categories_serializer.data
-        })
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()  # ดึงข้อมูลจาก slug ที่ส่งมาจาก URL
+        serializer = self.get_serializer(instance, context={'request': request})
+        data = serializer.data
+        return Response(data)
 
 class NewsLikeViewSet(viewsets.ModelViewSet):
     serializer_class = NewsLikeSerializer
@@ -154,3 +188,12 @@ class ConservationMethodViewSet(viewsets.ModelViewSet):
     queryset = ConservationMethod.objects.all()
     serializer_class = ConservationMethodSerializer
     permission_classes = [AllowAny]
+    
+class NewsLikeBySlugView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, slug):
+        news = get_object_or_404(News, slug=slug)
+        like_obj, _ = NewsLike.objects.get_or_create(user=request.user, news=news)
+        serializer = NewsLikeSerializer(like_obj, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

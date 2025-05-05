@@ -36,7 +36,7 @@ class NewsAdmin(admin.ModelAdmin):
     search_fields = ('title', 'slug', 'content', 'author__username')
     list_filter = ('category', 'created_at', 'author')
     readonly_fields = ('views',)
-    prepopulated_fields = {'slug': ('title',)}  # อัตโนมัติสร้าง slug จาก title ใน admin
+    prepopulated_fields = {'slug': ('title',)}
 
 @admin.register(SavedNews)
 class SavedNewsAdmin(admin.ModelAdmin):

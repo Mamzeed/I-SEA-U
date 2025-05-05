@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function NewsDetailPage() {
   const router = useRouter();
-  const { slug } = router.query; // ดึง slug จาก URL
+  const { slug } = router.query;
 
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,63 +12,52 @@ export default function NewsDetailPage() {
   const [bookmarked, setBookmarked] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState([]);
-  const [user, setUser] = useState(null); // เก็บข้อมูลผู้ใช้
-
-  useEffect(() => {
-    // ดึงข้อมูลผู้ใช้ที่ล็อกอิน
-    const user = localStorage.getItem('user'); // หรือวิธีที่ใช้เก็บข้อมูลผู้ใช้
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-  }, []);
 
   useEffect(() => {
     if (slug) {
-      // ดึงข้อมูลข่าวจาก API
       fetch(`http://localhost:3342/api/news/${slug}/`)
         .then((res) => res.json())
         .then((data) => {
           setNews(data);
-          setLiked(data.is_liked); // กำหนดสถานะไลค์
-          setBookmarked(data.is_saved); // กำหนดสถานะบุ๊กมาร์ก
-          setComments(data.comments); // ดึงคอมเมนต์
           setLoading(false);
         })
         .catch((err) => {
-          console.error('โหลดข่าวล้มเหลว:', err);
+          console.error('Error fetching news:', err);
           setLoading(false);
         });
     }
   }, [slug]);
 
-  const toggleLike = () => {
-    if (!user) return; // หากยังไม่ได้ล็อกอิน
-    setLiked(!liked);
-    // สามารถส่งคำขอไปยัง API เพื่อบันทึกสถานะไลค์ที่นี่
+  const toggleLike = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3342/api/news/like/${slug}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      setLiked(data.liked); // ต้องให้ backend ส่ง 'liked': true/false
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
   };
 
   const toggleBookmark = () => {
-    if (!user) return; // หากยังไม่ได้ล็อกอิน
-    setBookmarked(!bookmarked);
-    // สามารถส่งคำขอไปยัง API เพื่อบันทึกสถานะบุ๊กมาร์กที่นี่
+    setBookmarked((prev) => !prev); // ไว้ทำ API จริงทีหลัง
   };
 
   const handleAddComment = () => {
-    if (commentText.trim() === '') return;
-    if (!user) {
-      alert('กรุณาล็อกอินก่อนแสดงความคิดเห็น');
-      return;
+    if (commentText.trim()) {
+      const newComment = {
+        id: Date.now(),
+        user: 'คุณ',
+        text: commentText,
+      };
+      setComments([...comments, newComment]);
+      setCommentText('');
     }
-
-    const newComment = {
-      id: comments.length + 1,
-      user: user.username, // ใช้ username ของผู้ใช้ที่ล็อกอิน
-      text: commentText.trim(),
-    };
-
-    setComments([newComment, ...comments]);
-    setCommentText('');
-    // สามารถส่งคอมเมนต์ไปยัง API ที่ Backend ได้ที่นี่
   };
 
   const handleKeyPress = (e) => {
@@ -77,8 +66,8 @@ export default function NewsDetailPage() {
     }
   };
 
-  if (loading) return <div className="p-6 text-center text-black">กำลังโหลด...</div>;
-  if (!news) return <div className="p-6 text-center text-red-600">ไม่พบข่าวนี้</div>;
+  if (loading) return <div>กำลังโหลด...</div>;
+  if (!news) return <div>ไม่พบข่าวนี้</div>;
 
   return (
     <div className="bg-[#FFF6E9] min-h-screen font-sans">
@@ -104,7 +93,7 @@ export default function NewsDetailPage() {
         />
         <p className="text-gray-800 text-lg leading-relaxed">{news.content}</p>
         <div className="flex justify-between items-center text-sm text-gray-500">
-          <span>โดย {news.author?.username || 'ไม่ทราบผู้เขียน'}</span>
+          <span>โดย {news.author || 'ไม่ทราบผู้เขียน'}</span>
           <span>{new Date(news.created_at).toLocaleDateString('th-TH')}</span>
         </div>
 
@@ -139,18 +128,18 @@ export default function NewsDetailPage() {
           </div>
 
           {/* Comment List */}
-        <div className="space-y-4">
-            {comments?.length > 0 ? (
-                comments.map((comment) => (
+          <div className="space-y-4">
+            {comments.length > 0 ? (
+              comments.map((comment) => (
                 <div key={comment.id} className="bg-gray-100 rounded-xl p-4 shadow mb-3">
-                    <p className="font-semibold text-black">{comment.user}</p>
-                    <p className="text-gray-700">{comment.text}</p>
+                  <p className="font-semibold text-black">{comment.user}</p>
+                  <p className="text-gray-700">{comment.text}</p>
                 </div>
-                ))
+              ))
             ) : (
-                <p className="text-black">ยังไม่มีความคิดเห็น</p>
+              <p className="text-black">ยังไม่มีความคิดเห็น</p>
             )}
-        </div>
+          </div>
         </div>
       </div>
     </div>

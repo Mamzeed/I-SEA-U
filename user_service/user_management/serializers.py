@@ -59,6 +59,7 @@ class NewsSerializer(serializers.ModelSerializer):
             return obj.saved_by.filter(user=request.user).exists()
         return False
 
+
 class SavedNewsSerializer(serializers.ModelSerializer):
     news = NewsSerializer(read_only=True)
     user = UserSerializer(read_only=True)

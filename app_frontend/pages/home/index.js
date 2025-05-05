@@ -28,7 +28,7 @@ export default function HomePage() {
 
       {/* News List */}
       <div className="px-6 mt-10">
-        <h1 className="text-3xl font-bold text-center mb-6">ข่าวล่าสุด</h1>
+        <h1 className="text-3xl text-black font-bold text-center mb-6">ข่าวล่าสุด</h1>
 
         {news.map((item) => (
           <div
