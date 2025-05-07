@@ -5,7 +5,7 @@ export default function SEA2() {
   const [newsList, setNewsList] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3342/api/news/category/Maritime Crime/')
+    fetch('http://localhost:3342/api/news/category/MaritimeCrime/')
       .then((res) => res.json())
       .then((data) => setNewsList(data))
       .catch((err) => console.error('Error fetching SEA2 news:', err));
