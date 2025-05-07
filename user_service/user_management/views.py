@@ -60,10 +60,10 @@ def signup(request):
         customer_form = CustomerForm()
     return render(request, 'signup.html', {'user_form': user_form, 'customer_form': customer_form})
 
-def news_detail(request, slug):
+def news_detail_by_date(request, date, slug):
     try:
-        # ค้นหาข่าวที่มี slug ตรงกัน
-        news_item = News.objects.get(slug=slug)
+        # ค้นหาข่าวที่มี slug และ date ตรงกัน
+        news_item = News.objects.get(slug=slug, published_date=date)
         # เตรียมข้อมูลที่ต้องการส่งกลับ
         data = {
             "title": news_item.title,
