@@ -5,7 +5,7 @@ export default function SEA2() {
   const [newsList, setNewsList] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3342/api/news/category/ภัยพิบัติทางทะเล/')
+    fetch('http://localhost:3342/api/news/category/Marine Disaster/')
       .then((res) => res.json())
       .then((data) => setNewsList(data))
       .catch((err) => console.error('Error fetching SEA2 news:', err));
@@ -17,7 +17,7 @@ export default function SEA2() {
       <div className="relative bg-[#40A2E3] text-white px-8 py-8 shadow flex items-center justify-between w-full">
         <Link href="/home">
           <button className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow hover:scale-105 transition">
-            &lt; หน้าหลัก
+            &lt; Home
           </button>
         </Link>
         <div className="absolute left-1/2 transform -translate-x-1/2">
@@ -27,7 +27,7 @@ export default function SEA2() {
 
       {/* Page Title */}
       <div className="p-6">
-        <h1 className="text-5xl font-bold text-black py-5">ภัยพิบัติทางทะเล</h1>
+        <h1 className="text-5xl font-bold text-black py-5">Marine Disaster</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {newsList.map((news) => (
             <Link key={news.slug} href={`/news/${news.slug}`}>

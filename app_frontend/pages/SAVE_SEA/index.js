@@ -17,7 +17,7 @@ export default function SeaDangers() {
 
       {/* Page Title */}
       <div style={{ padding: '20px' }}>
-        <h1 className="text-5xl font-bold text-black py-5 ml-10">กิจกรรมอนุรักษ์ท้องทะเล</h1>
+        <h1 className="text-5xl font-bold text-black py-5 ml-10">Marine Conservation Activities</h1>
 
         {/* News Cards */}
         {[1, 2, 3].map((num) => (
