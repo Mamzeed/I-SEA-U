@@ -11,29 +11,23 @@ export default function UserPage() {
   const [uploading, setUploading] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // โหลดข้อมูล user จาก API
   useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (!stored) {
+    const token = localStorage.getItem('jwt_access');
+    if (!token) {
       router.push('/login');
       return;
     }
-    const parsed = JSON.parse(stored);
-    if (!parsed.access) {
-      router.push('/login');
-      return;
-    }
-
+  
     setLoadingUser(true);
     fetch('http://localhost:3342/api/me/', {
-      headers: { Authorization: `Bearer ${parsed.access}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
       .then(data => {
         if (data.error) {
           router.push('/login');
         } else {
-          setUser({ ...data, token: parsed.access });
+          setUser({ ...data, token });
           if (data.profile_image) {
             setProfileImage(`http://localhost:3342${data.profile_image}`);
           }
@@ -45,6 +39,7 @@ export default function UserPage() {
       })
       .finally(() => setLoadingUser(false));
   }, [router]);
+  
 
   // อัปโหลดรูปขึ้น server
   const handleImageChange = async (e) => {
