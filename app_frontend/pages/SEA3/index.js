@@ -3,49 +3,84 @@ import Link from 'next/link';
 
 export default function SEA2() {
   const [newsList, setNewsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:3342/api/news/category/MaritimeCrime/')
-      .then((res) => res.json())
-      .then((data) => setNewsList(data))
-      .catch((err) => console.error('Error fetching SEA2 news:', err));
-  }, []);
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Failed to fetch news');
+      }
+      return res.json();
+    })
+    .then((data) => {
+      setNewsList(data);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error('Error fetching news:', err);
+      setError('ไม่สามารถโหลดข่าวได้ในขณะนี้');
+      setLoading(false);
+    });
+}, []);
 
-  return (
-    <div className="bg-[#FFF6E9] min-h-screen font-sans">
-      {/* Header */}
-      <div className="relative bg-[#40A2E3] text-white px-8 py-8 shadow flex items-center justify-between w-full">
-        <Link href="/home">
-          <button className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow hover:scale-105 transition">
-            &lt; Home
-          </button>
-        </Link>
-        <div className="absolute left-1/2 transform -translate-x-1/2">
-          <img src="/logoiseau_w.png" alt="Logo" className="w-40" />
-        </div>
-      </div>
+if (loading) return <div className="text-black">กำลังโหลด...</div>;
+if (error) return <div className="text-red-500">{error}</div>;
+if (!newsList || newsList.length === 0) return <p className="text-black">ไม่มีข่าวที่จะแสดง</p>;
 
-      {/* Page Title */}
-      <div className="p-6">
-        <h1 className="text-5xl font-bold text-black py-5">Maritime Crime</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {newsList.map((news) => (
-            <Link key={news.slug} href={`/news/${news.slug}`}>
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:scale-105 hover:-translate-y-1 cursor-pointer">
-                <img
-                  src={`http://localhost:3342${news.image}`}
-                  className="w-full h-48 object-cover"
-                  alt={news.title}
-                />
-                <div className="p-4">
-                  <h3 className="text-xl font-semibold text-black">{news.title}</h3>
-                  <p className="text-gray-600">{news.content.substring(0, 80)}...</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+return (
+  <div className="min-h-screen bg-[#FFF6E9] font-sans">
+    {/* Header */}
+    <div className="relative bg-[#40A2E3] text-white px-8 py-12 shadow flex items-center justify-between w-full">
+      <button
+        onClick={() => window.history.back()}
+        className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow hover:scale-105 transition"
+      >
+        &lt; ย้อนกลับ
+      </button>
+      <div className="absolute left-1/2 transform -translate-x-1/2">
+        <img src="/logoiseau_w.png" alt="Logo" className="w-80" />
       </div>
     </div>
-  );
+
+    {/* ข่าวย่อย */}
+    <div className="px-6 mt-12">
+      <h1 className="text-3xl font-bold text-black mb-6">ข่าวในหมวดหมู่: อาชญากรรมทางทะเล</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {newsList.map((item) => (
+          <div
+            key={item.id}
+            className="bg-white rounded-2xl shadow-md p-4 hover:shadow-lg transition duration-300 hover:scale-[1.02] flex flex-col"
+          >
+            <img
+              src={item.image}
+              alt={item.title || 'ไม่มีชื่อข่าว'}
+              className="w-full h-48 object-cover rounded-xl mb-4 shadow-sm"
+            />
+            <h3 className="text-xl font-semibold text-[#333] mb-2">{item.title}</h3>
+            <p className="text-gray-700 text-sm mb-3 line-clamp-3">{item.content}</p>
+
+            <div className="flex justify-between text-xs text-gray-500 mb-2">
+              <span>by {item.author.username}</span>
+              <span>{new Date(item.created_at).toLocaleDateString('th-TH')}</span>
+            </div>
+
+            <div className="flex gap-3 text-xs text-gray-600 mb-4">
+              <span>Like {item.likes_count}</span>
+              <span>Comment {item.comments_count}</span>
+              <span>Seen {item.views}</span>
+            </div>
+
+            <Link href={`/news/${item.created_at.slice(0, 10)}/${item.slug}`} className="mt-auto">
+              <button className="bg-[#40A2E3] text-white w-full py-2 rounded-lg shadow hover:scale-105 transition duration-300">
+                Read
+              </button>
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
 }

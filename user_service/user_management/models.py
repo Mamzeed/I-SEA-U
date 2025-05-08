@@ -25,14 +25,16 @@ class Category(models.Model):
 class News(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
-    image = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='news_images/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='news')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news')
     slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    published_date = models.DateTimeField(default=timezone.now)
+    published_date = models.DateField(default=timezone.now)
     views = models.PositiveIntegerField(default=0)
+    tags = models.CharField(max_length=255, blank=True, null=True)  # เพิ่มแท็กสำหรับข่าว
+    additional_info = models.TextField(blank=True, null=True)  # ข้อมูลเพิ่มเติม เช่น คำอธิบาย
 
     def __str__(self):
         return self.title

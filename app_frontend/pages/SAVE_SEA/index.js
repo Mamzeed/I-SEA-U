@@ -1,6 +1,33 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export default function SeaDangers() {
+export default function ConservationActivities() {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('http://localhost:3342/api/conservation-activities/')
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch activities');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setActivities(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching activities:', err);
+        setError('ไม่สามารถโหลดกิจกรรมได้ในขณะนี้');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div className="text-black">กำลังโหลด...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+
   return (
     <div className="bg-[#FFF6E9] min-h-screen font-sans">
       {/* Header */}
@@ -19,19 +46,25 @@ export default function SeaDangers() {
       <div style={{ padding: '20px' }}>
         <h1 className="text-5xl font-bold text-black py-5 ml-10">Marine Conservation Activities</h1>
 
-        {/* News Cards */}
-        {[1, 2, 3].map((num) => (
-          <div
-            key={num}
-            className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 mb-6"
-          >
-            <img src={`/news${num}.jpg`} alt={`ข่าว ${num}`} className="w-full h-48 object-cover" />
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-black">{`ชื่อกิจกรรม ${num}`}</h3>
-              <p className="text-gray-600">รายละเอียดกิจกรรม</p>
+        {/* Activity Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {activities.map((activity) => (
+            <div
+              key={activity.id}
+              className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 mb-6"
+            >
+              <img
+                src={activity.image}
+                alt={activity.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <h3 className="text-xl font-semibold text-black">{activity.title}</h3>
+                <p className="text-gray-600 line-clamp-2">{activity.description}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
         {/* Contact Info Box */}
         <div className="bg-white rounded-xl shadow-lg p-6 mt-10">
