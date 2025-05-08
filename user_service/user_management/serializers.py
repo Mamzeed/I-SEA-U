@@ -35,7 +35,8 @@ class NewsSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'content', 'image', 'category', 'author', 
             'slug', 'created_at', 'updated_at', 'views',
-            'likes_count', 'comments_count', 'is_liked', 'is_saved'
+            'likes_count', 'comments_count', 'is_liked', 'is_saved',
+            'tags', 'additional_info'
         )
 
     def get_author(self, obj):
@@ -84,14 +85,26 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'user', 'news', 'content', 'created_at', 'updated_at')
 
+# ใน serializer
 class ConservationActivitySerializer(serializers.ModelSerializer):
+    is_active = serializers.SerializerMethodField()
+    start_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    end_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    image = serializers.ImageField(use_url=True)
+
     class Meta:
         model = ConservationActivity
         fields = (
-            'id', 'title', 'description', 'image', 
-            'contact_info', 'location', 'start_date', 
-            'end_date', 'created_at', 'updated_at'
+            'id', 'title', 'description', 'image',
+            'contact_info', 'location', 'start_date',
+            'end_date', 'created_at', 'updated_at',
+            'is_active'
         )
+
+    def get_is_active(self, obj):
+        from django.utils.timezone import now
+        return obj.start_date <= now() <= obj.end_date
+
 
 class ConservationMethodSerializer(serializers.ModelSerializer):
     class Meta:

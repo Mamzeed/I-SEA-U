@@ -38,13 +38,16 @@ export default function LoginPage() {
     <main className="flex flex-col items-center justify-center min-h-screen bg-orange-50 text-center">
       <img src="/logoiseau_b.png" alt="Logo" className="w-72 mb-1" />
       <form onSubmit={onLogin} className="flex flex-col items-center">
+        <label htmlFor="username" className="sr-only">Username</label>
         <input
+          id="username"
           type="text"
           name="username"
           placeholder="username"
           required
           className="mb-3 px-4 py-2 w-80 bg-white text-black rounded-lg outline-none shadow-lg transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1"
         />
+        <label htmlFor="password" className="sr-only">Password</label>
         <input
           type="password"
           name="password"

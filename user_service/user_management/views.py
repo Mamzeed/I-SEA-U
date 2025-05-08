@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.contrib.auth.models import User
 from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -38,12 +38,6 @@ def register(request):
         return JsonResponse({"error": "data not valid"}, status=400)
     return JsonResponse({"error": "method not allowed."}, status=405)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def me(request):
-    serializer = CustomerSerializer(request.user)
-    return Response(serializer.data)
-
 def signup(request):
     if request.method == 'POST':
         user_form = ExtendedUserCreationForm(request.POST)
@@ -60,24 +54,21 @@ def signup(request):
         customer_form = CustomerForm()
     return render(request, 'signup.html', {'user_form': user_form, 'customer_form': customer_form})
 
+from datetime import datetime
+
 def news_detail_by_date(request, date, slug):
     try:
-        # ค้นหาข่าวที่มี slug และ date ตรงกัน
-        news_item = News.objects.get(slug=slug, published_date=date)
-        # เตรียมข้อมูลที่ต้องการส่งกลับ
+        date_obj = datetime.strptime(date, '%Y-%m-%d').date()  # แปลง date เป็น datetime.date
+        news_item = News.objects.get(slug=slug, published_date=date_obj)
         data = {
             "title": news_item.title,
             "content": news_item.content,
             "image": news_item.image.url if news_item.image else None,
-            "category": news_item.category.name,
-            "author": news_item.author.username,
-            "created_at": news_item.created_at,
-            "slug": news_item.slug
+            "tags": news_item.tags,
+            "additional_info": news_item.additional_info,
         }
-        # ส่งข้อมูลกลับเป็น JSON
         return JsonResponse(data, status=200)
     except News.DoesNotExist:
-        # กรณีไม่พบข่าว
         return JsonResponse({"error": "News not found"}, status=404)
 
 def news_environment(request):
@@ -101,14 +92,14 @@ def news_by_category(request, category_name):
     return Response(serializer.data)
 
 class CustomerView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request, format=None):
-        customer_data = Customer.objects.get(user=request.user)
-        customer_serializer = CustomerSerializer(customer_data)
-        content = {
-            'data': customer_serializer.data
-        }
-        return Response(content)
+   permission_classes = [IsAuthenticated]
+   def get(self, request, format=None):
+       customer_data = get_object_or_404(Customer, user=request.user)
+       customer_serializer = CustomerSerializer(customer_data)
+       content = {
+           'data': customer_serializer.data
+       }
+       return Response(content)
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -197,3 +188,23 @@ class NewsLikeBySlugView(APIView):
         like_obj, _ = NewsLike.objects.get_or_create(user=request.user, news=news)
         serializer = NewsLikeSerializer(like_obj, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        customer = Customer.objects.get(user=request.user)
+        serializer = CustomerSerializer(customer)
+        return Response(serializer.data)
+    
+class CustomerUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def patch(self, request):
+        customer = Customer.objects.get(user=request.user)
+        serializer = CustomerSerializer(customer, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)

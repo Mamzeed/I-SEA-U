@@ -27,6 +27,8 @@ urlpatterns = [
     path('api/news/environment/', news_environment, name='news_environment'),
     path('api/news/<str:date>/<slug:slug>/', news_detail_by_date, name='news_detail_by_date'),
     path('api/news-likes/by-slug/<slug:slug>/', NewsLikeBySlugView.as_view(), name='newslike-by-slug'),
+    path('api/me/', MeView.as_view(), name='me'),
+    path('api/customer/', CustomerUpdateView.as_view(), name='customer_update'),
 ]
 
 if settings.DEBUG:
