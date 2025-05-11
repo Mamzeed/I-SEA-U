@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from user_management.models import (
     Customer, Category, News, SavedNews, 
     NewsLike, Comment, ConservationActivity, 
-    ConservationMethod
+    ConservationMethod, Profile
 )
 
 class UserSerializer(serializers.ModelSerializer):
@@ -137,3 +137,19 @@ class SignupSerializer(serializers.Serializer):
             password=validated_data['password']
         )
         return user
+    
+class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username')
+    email = serializers.EmailField(source='user.email')
+    profile_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ['username', 'email', 'profile_image', 'phone', 'address']
+
+    def get_profile_image(self, obj):
+        request = self.context.get('request')
+        if obj.profile_image and hasattr(obj.profile_image, 'url'):
+            # คืน URL เต็ม (absolute URL)
+            return request.build_absolute_uri(obj.profile_image.url)
+        return None

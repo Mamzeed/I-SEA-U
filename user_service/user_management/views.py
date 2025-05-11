@@ -14,7 +14,7 @@ from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from .forms import CustomerForm, ExtendedUserCreationForm
 from user_management.models import News, NewsLike, Comment
-from .serializers import NewsSerializer, CategorySerializer, CustomerSerializer, NewsLikeSerializer, CommentSerializer, ConservationActivitySerializer, ConservationMethodSerializer
+from .serializers import *
 
 
 from user_management.models import *
@@ -208,3 +208,11 @@ class CustomerUpdateView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+    
+class PublicProfileView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, username):
+        profile = get_object_or_404(Profile, user__username=username)
+        serializer = ProfileSerializer(profile, context={'request': request})
+        return Response(serializer.data)
