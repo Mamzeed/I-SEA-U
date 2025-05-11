@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRouter } from "next/router"; // ✅ นำเข้า useRouter
+import { useRouter } from "next/router";
 
 export default function Signup() {
   const router = useRouter(); // ✅ ใช้ router สำหรับการเปลี่ยนหน้า
@@ -60,7 +60,7 @@ export default function Signup() {
 
       if (response.ok) {
         alert("Registration successful!");
-        router.push("/home"); // ✅ เปลี่ยนไปหน้า Home หลังสมัครสำเร็จ
+        router.push("/home");
       } else {
         setError(result.error || "Something went wrong!");
       }

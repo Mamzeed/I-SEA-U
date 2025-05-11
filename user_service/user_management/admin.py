@@ -3,8 +3,9 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from user_management.models import (
     Customer, Category, News, SavedNews, NewsLike, 
-    Comment, ConservationActivity, ConservationMethod
+    Comment, ConservationActivity, ConservationMethod, Profile
 )
+from django.utils.html import format_html
 
 admin.site.register(Customer)
 
@@ -70,3 +71,13 @@ class ConservationMethodAdmin(admin.ModelAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'display_profile_image', 'phone', 'created_at')
+
+    def display_profile_image(self, obj):
+        if obj.profile_image:
+            return format_html('<img src="{}" style="width: 50px; height: 50px; border-radius: 50%;" />', obj.profile_image.url)
+        return "No Image"
+    display_profile_image.short_description = "Profile Image"

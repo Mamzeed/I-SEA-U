@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/news-likes/by-slug/<slug:slug>/', NewsLikeBySlugView.as_view(), name='newslike-by-slug'),
     path('api/me/', MeView.as_view(), name='me'),
     path('api/customer/', CustomerUpdateView.as_view(), name='customer_update'),
+    path('api/public-profile/<str:username>/', PublicProfileView.as_view(), name='public_profile'),
 ]
 
 if settings.DEBUG:
