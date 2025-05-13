@@ -34,7 +34,7 @@ export default function ConservationActivities() {
       <div className="relative bg-[#40A2E3] text-white px-8 py-8 shadow flex items-center justify-between w-full">
         <Link href="/home">
           <button className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow hover:scale-105 transition">
-            &lt; หน้าหลัก
+            &lt; Home
           </button>
         </Link>
         <div className="absolute left-1/2 transform -translate-x-1/2">

@@ -53,7 +53,7 @@ export default function SEA2() {
           onClick={() => window.history.back()}
           className="bg-white text-black font-bold px-4 py-2 rounded-lg shadow hover:scale-105 transition"
         >
-          &lt; ย้อนกลับ
+          &lt; Home
         </button>
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <img src="/logoiseau_w.png" alt="Logo" className="w-80" />
@@ -62,7 +62,7 @@ export default function SEA2() {
 
       {/* ข่าวย่อย */}
       <div className="px-6 mt-12">
-        <h1 className="text-3xl font-bold text-black mb-6">ข่าวในหมวดหมู่: ภัยพิบัติทางทะเล</h1>
+        <h1 className="text-6xl font-bold text-black mb-6">Marine Disaster</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {newsList.map((item) => (
             <div

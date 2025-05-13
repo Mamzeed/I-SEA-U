@@ -8,22 +8,21 @@ export default function NewsDetailPage() {
 
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState([]);
 
+  // โหลดข่าว
   useEffect(() => {
     if (router.isReady && date && slug) {
       fetch(`http://localhost:3342/api/news/${date}/${slug}/`)
         .then((res) => res.json())
         .then((data) => {
           setNews(data);
-          // ตรวจสอบว่า data.comments เป็นอาร์เรย์
           if (Array.isArray(data.comments)) {
             setComments(data.comments);
           } else {
-            setComments([]); // หากไม่มีคอมเมนต์หรือข้อมูลผิดปกติ ให้ตั้งเป็นอาร์เรย์เปล่า
+            setComments([]);
           }
           setLoading(false);
         })
@@ -34,37 +33,35 @@ export default function NewsDetailPage() {
     }
   }, [router.isReady, date, slug]);
 
-  const toggleLike = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3342/api/news/like/${slug}`, {
-        method: 'POST',  // ใช้ POST แทน GET
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-
-      if (data && data.liked !== undefined) {
-        setLiked(data.liked);
-      } else {
-        console.error("ข้อมูลที่ส่งกลับจาก API ไม่ถูกต้อง");
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-    }
-  };
+  // ตรวจสอบว่าเคย Keep หรือยัง
+  useEffect(() => {
+    if (!news) return;
+    const keptNews = JSON.parse(localStorage.getItem('kept_news') || '[]');
+    const exists = keptNews.some((item) => item.slug === news.slug);
+    setBookmarked(exists);
+  }, [news]);
 
   const toggleBookmark = () => {
-    setBookmarked((prev) => !prev);
+    const keptNews = JSON.parse(localStorage.getItem('kept_news') || '[]');
+
+    if (!bookmarked) {
+      // Keep ข่าว
+      const newKept = [...keptNews, news];
+      localStorage.setItem('kept_news', JSON.stringify(newKept));
+      setBookmarked(true);
+    } else {
+      // ยกเลิก Keep
+      const filtered = keptNews.filter((item) => item.slug !== news.slug);
+      localStorage.setItem('kept_news', JSON.stringify(filtered));
+      setBookmarked(false);
+    }
   };
 
   const handleAddComment = () => {
     if (commentText.trim()) {
       const newComment = {
         id: Date.now(),
-        user: 'คุณ', // สามารถแก้ไขตามชื่อผู้ใช้งานจริง
+        user: 'คุณ',
         text: commentText,
       };
       setComments([...comments, newComment]);
@@ -110,17 +107,17 @@ export default function NewsDetailPage() {
         {/* Comments Section */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center gap-4 mb-4">
-            <button 
-              onClick={toggleLike} 
-              className={`text-2xl hover:scale-110 transition font-bold ${liked ? 'text-red-600' : 'text-gray-500'}`} 
+            <button
+              onClick={toggleBookmark}
+              className={`px-6 py-2 text-lg font-semibold rounded-full transition shadow ${
+                bookmarked
+                  ? 'bg-gray-400 text-white hover:bg-gray-500'
+                  : 'bg-[#FFD700] text-black hover:bg-yellow-400'
+              }`}
             >
-              {liked ? '❤️' : '🤍'}
+              {bookmarked ? 'Kept' : 'Keep'}
             </button>
-
-            <button onClick={toggleBookmark} className="text-2xl hover:scale-110 transition">
-              {bookmarked ? '📤' : '📥'}
-            </button>
-            <p className="ml-2 text-black">ความคิดเห็น ({comments ? comments.length : 0})</p>
+            <p className="ml-2 text-black">ความคิดเห็น ({comments.length})</p>
           </div>
 
           {/* Comment Form */}
@@ -142,11 +139,11 @@ export default function NewsDetailPage() {
           </div>
 
           {/* แสดงความคิดเห็น */}
-          {Array.isArray(comments) && comments.length > 0 ? (
+          {comments.length > 0 ? (
             comments.map((comment) => (
               <div key={comment.id} className="bg-gray-100 rounded-xl p-4 shadow mb-3 flex items-start gap-4">
                 <img
-                  src={comment.profile || '/default-profile.png'}
+                  src={comment.profile || '/profile.profile_image'}
                   alt="User profile"
                   className="w-10 h-10 rounded-full object-cover"
                 />
