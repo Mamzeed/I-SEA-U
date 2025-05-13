@@ -1,13 +1,29 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 export default function SEA1() {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    fetch('http://localhost:3342/api/news/category/Marineenvironment/')
+    const token = localStorage.getItem('jwt_access'); // อ่าน JWT Token จาก localStorage
+
+    if (!token) {
+      setError('คุณต้องเข้าสู่ระบบก่อน');
+      setLoading(false);
+      router.push('/login'); // เปลี่ยนเส้นทางไปยังหน้าล็อกอินหากไม่มี token
+      return;
+    }
+
+    fetch('http://localhost:3342/api/news/category/Marineenvironment/', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,  // ส่ง JWT Token ไปใน headers
+      },
+    })
       .then((res) => {
         if (!res.ok) {
           throw new Error('Failed to fetch news');
@@ -23,7 +39,7 @@ export default function SEA1() {
         setError('ไม่สามารถโหลดข่าวได้ในขณะนี้');
         setLoading(false);
       });
-  }, []);
+  }, [router]);
 
   if (loading) return <div className="text-black">กำลังโหลด...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
