@@ -73,7 +73,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="flex flex-col items-center mt-6 space-y-4">
-        <Link href="/save-sea">
+        <Link href="/keep">
           <button className="bg-[#FFD700] text-black text-lg px-6 py-3 rounded-full shadow-md hover:scale-105 transition">
             ดูข่าวที่บันทึกไว้
           </button>
