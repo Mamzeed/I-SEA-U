@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
@@ -89,6 +89,12 @@ def news_by_category(request, category_name):
     category = get_object_or_404(Category, name=category_name)
     news = News.objects.filter(category=category).order_by('-created_at')
     serializer = NewsSerializer(news, many=True, context={'request': request})
+    return Response(serializer.data)
+
+def get(self, request):
+    user = request.user  # ต้องใช้ permission_classes = [IsAuthenticated]
+    saved = SavedNews.objects.filter(user=user)
+    serializer = SavedNewsSerializer(saved, many=True)
     return Response(serializer.data)
 
 class CustomerView(APIView):
@@ -216,3 +222,20 @@ class PublicProfileView(APIView):
         profile = get_object_or_404(Profile, user__username=username)
         serializer = ProfileSerializer(profile, context={'request': request})
         return Response(serializer.data)
+    
+class SavedNewsListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        news = SavedNews.objects.all()
+        serializer = SavedNewsSerializer(news, many=True)
+        return Response(serializer.data)
+
+class SavedNewsDetailView(APIView):
+    def delete(self, request, pk):
+        try:
+            saved_news = SavedNews.objects.get(pk=pk)
+            saved_news.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except SavedNews.DoesNotExist:
+            return Response({'error': 'ไม่พบข่าวที่ต้องการลบ'}, status=status.HTTP_404_NOT_FOUND)

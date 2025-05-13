@@ -19,6 +19,12 @@ export default function NewsDetailPage() {
         .then((res) => res.json())
         .then((data) => {
           setNews(data);
+          // ตรวจสอบว่า data.comments เป็นอาร์เรย์
+          if (Array.isArray(data.comments)) {
+            setComments(data.comments);
+          } else {
+            setComments([]); // หากไม่มีคอมเมนต์หรือข้อมูลผิดปกติ ให้ตั้งเป็นอาร์เรย์เปล่า
+          }
           setLoading(false);
         })
         .catch((err) => {
@@ -28,29 +34,27 @@ export default function NewsDetailPage() {
     }
   }, [router.isReady, date, slug]);
 
-    const toggleLike = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3342/api/news/like/${slug}`, {
-          method: 'POST',  // ใช้ POST แทน GET
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-    
-        // ตรวจสอบการตอบกลับจาก API
-        const data = await res.json();
-    
-        if (data && data.liked !== undefined) {
-          // อัปเดตค่าของ `liked` ตามการตอบกลับ
-          setLiked(data.liked);
-        } else {
-          console.error("ข้อมูลที่ส่งกลับจาก API ไม่ถูกต้อง");
-        }
-      } catch (error) {
-        console.error('Error toggling like:', error);
+  const toggleLike = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3342/api/news/like/${slug}`, {
+        method: 'POST',  // ใช้ POST แทน GET
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (data && data.liked !== undefined) {
+        setLiked(data.liked);
+      } else {
+        console.error("ข้อมูลที่ส่งกลับจาก API ไม่ถูกต้อง");
       }
-    };
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
 
   const toggleBookmark = () => {
     setBookmarked((prev) => !prev);
@@ -60,7 +64,7 @@ export default function NewsDetailPage() {
     if (commentText.trim()) {
       const newComment = {
         id: Date.now(),
-        user: 'คุณ',
+        user: 'คุณ', // สามารถแก้ไขตามชื่อผู้ใช้งานจริง
         text: commentText,
       };
       setComments([...comments, newComment]);
@@ -106,18 +110,17 @@ export default function NewsDetailPage() {
         {/* Comments Section */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center gap-4 mb-4">
-          <button 
+            <button 
               onClick={toggleLike} 
               className={`text-2xl hover:scale-110 transition font-bold ${liked ? 'text-red-600' : 'text-gray-500'}`} 
             >
               {liked ? '❤️' : '🤍'}
             </button>
 
-
             <button onClick={toggleBookmark} className="text-2xl hover:scale-110 transition">
               {bookmarked ? '📤' : '📥'}
             </button>
-            <p className="ml-2 text-black">ความคิดเห็น ({comments.length})</p>
+            <p className="ml-2 text-black">ความคิดเห็น ({comments ? comments.length : 0})</p>
           </div>
 
           {/* Comment Form */}
@@ -137,22 +140,16 @@ export default function NewsDetailPage() {
               ส่ง
             </button>
           </div>
-          
 
-            {comments.length > 0 ? (
+          {/* แสดงความคิดเห็น */}
+          {Array.isArray(comments) && comments.length > 0 ? (
             comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="bg-gray-100 rounded-xl p-4 shadow mb-3 flex items-start gap-4"
-              >
-                {/* รูปโปรไฟล์ */}
+              <div key={comment.id} className="bg-gray-100 rounded-xl p-4 shadow mb-3 flex items-start gap-4">
                 <img
-                  src={comment.profile || '/default-profile.png'} // ใช้ default ถ้าไม่มี
+                  src={comment.profile || '/default-profile.png'}
                   alt="User profile"
                   className="w-10 h-10 rounded-full object-cover"
                 />
-
-                {/* ข้อความคอมเมนต์ */}
                 <div>
                   <p className="font-semibold text-black">{comment.user}</p>
                   <p className="text-gray-700">{comment.text}</p>
@@ -162,7 +159,6 @@ export default function NewsDetailPage() {
           ) : (
             <p className="text-black">ยังไม่มีความคิดเห็น</p>
           )}
-
         </div>
       </div>
     </div>
