@@ -1,0 +1,14 @@
+# render.yaml
+services:
+  - type: web
+    name: user-service
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn user_service.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: user_service.settings
+      - key: SECRET_KEY
+        value: your-secret-key
+      - key: DEBUG
+        value: False
