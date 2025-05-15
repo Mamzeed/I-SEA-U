@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
 from rest_framework.routers import DefaultRouter
 from user_management.views import (
     register, CustomerView, NewsListView, news_by_category,
@@ -22,6 +23,8 @@ router.register(r'conservation-methods', ConservationMethodViewSet)
 
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', home, name='home'),  # root URL
     # Django admin
     path('admin/', admin.site.urls),
 
