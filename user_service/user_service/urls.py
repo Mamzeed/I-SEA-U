@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
 from rest_framework.routers import DefaultRouter
 from user_management.views import (
     register, CustomerView, NewsListView, news_by_category,
@@ -12,6 +13,10 @@ from user_management.views import (
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
+
+def root_redirect(request):
+    return redirect('news_list')
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
@@ -20,7 +25,10 @@ router.register(r'news-likes', NewsLikeViewSet, basename='news-like')
 router.register(r'conservation-activities', ConservationActivityViewSet)
 router.register(r'conservation-methods', ConservationMethodViewSet)
 
+
 urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', root_redirect, name='root'),  # root URL
     # Django admin
     path('admin/', admin.site.urls),
 
