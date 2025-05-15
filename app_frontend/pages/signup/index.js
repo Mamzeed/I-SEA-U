@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/router";
 
 export default function Signup() {
-  const router = useRouter(); // ✅ ใช้ router สำหรับการเปลี่ยนหน้า
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     username: "",

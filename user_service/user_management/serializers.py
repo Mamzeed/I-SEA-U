@@ -17,7 +17,6 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ('id', 'user', 'fullname', 'address', 'province', 'post_code', 'tel')
-        extra_kwargs = {'user': {'read_only': True}}
 
 
 class CategorySerializer(serializers.ModelSerializer):
