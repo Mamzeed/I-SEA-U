@@ -63,11 +63,11 @@ export default function LoginPage() {
         </button>
       </form>
       <div className="text-gray-500 mb-2">or</div>
-      <a href="/signup">
+      <link href="/signup">
         <button className="w-80 py-2 bg-emerald-600 text-white font-bold rounded-lg shadow-lg transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1">
           Sign up
         </button>
-      </a>
+      </link>
     </main>
   );
 }
