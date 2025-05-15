@@ -12,6 +12,7 @@ from user_management.views import (
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
@@ -20,7 +21,12 @@ router.register(r'news-likes', NewsLikeViewSet, basename='news-like')
 router.register(r'conservation-activities', ConservationActivityViewSet)
 router.register(r'conservation-methods', ConservationMethodViewSet)
 
+def home(request):
+    return HttpResponse("Welcome to I-SEA-U!")
+
 urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', home, name='home'),
     # Django admin
     path('admin/', admin.site.urls),
 
