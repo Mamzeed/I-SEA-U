@@ -15,8 +15,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 
-def root_redirect(request):
-    return redirect('news_list')
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
@@ -27,8 +25,6 @@ router.register(r'conservation-methods', ConservationMethodViewSet)
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', root_redirect, name='root'),  # root URL
     # Django admin
     path('admin/', admin.site.urls),
 
