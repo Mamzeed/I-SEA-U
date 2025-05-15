@@ -27,17 +27,14 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // reset any previous error
+    setError("");
 
-    // Check if password and confirm password match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
 
-    // Prepare the data to send
     const data = {
-      email: formData.email,
       username: formData.username,
       password: formData.password,
       fullname: formData.fullname,
@@ -50,13 +47,13 @@ export default function Signup() {
     try {
       const response = await fetch("http://127.0.0.1:3342/api/register/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       const result = await response.json();
+      console.log("Response status:", response.status);
+      console.log("Response data:", result);
 
       if (response.ok) {
         alert("Registration successful!");
@@ -65,9 +62,11 @@ export default function Signup() {
         setError(result.error || "Something went wrong!");
       }
     } catch (error) {
+      console.error("Fetch error:", error);
       setError("Something went wrong!");
     }
   };
+
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-orange-50 text-center">
