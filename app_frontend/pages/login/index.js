@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // ให้แสดงฟอร์มหลังจากโหลด client แล้วเท่านั้น
+    setIsClient(true);
   }, []);
 
   async function onLogin(event) {
@@ -31,7 +32,6 @@ export default function LoginPage() {
     }
   }
 
-  // รอให้โหลด client ก่อนถึงค่อยแสดง UI
   if (!isClient) return null;
 
   return (
@@ -63,11 +63,11 @@ export default function LoginPage() {
         </button>
       </form>
       <div className="text-gray-500 mb-2">or</div>
-      <link href="/signup">
+      <Link href="/signup">
         <button className="w-80 py-2 bg-emerald-600 text-white font-bold rounded-lg shadow-lg transition duration-300 ease-in-out hover:scale-105 hover:-translate-y-1">
           Sign up
         </button>
-      </link>
+      </Link>
     </main>
   );
 }
