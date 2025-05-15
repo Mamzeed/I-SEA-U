@@ -31,6 +31,9 @@ urlpatterns = [
     # API routes
     path('api/', include(router.urls)),
 
+    # Redirect root URL '/' ไปที่ '/news/' (หรือจะทำเป็น view แสดงหน้า home ก็ได้)
+    path('', lambda request: redirect('news_list'), name='root_redirect'),
+
     # Authentication & user registration
     path('api/register/', register, name='register'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
