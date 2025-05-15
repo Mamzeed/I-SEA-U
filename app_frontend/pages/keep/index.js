@@ -82,7 +82,7 @@ export default function SavedNewsPage() {
             className="flex bg-white rounded-xl shadow-md mb-7 overflow-hidden w-full h-48"
           >
             <img
-              src={`http://localhost:3342${news.news_image}`}
+              src={news.news_image}
               alt={news.news_title}
               className="w-48 h-32 object-cover"
             />

@@ -50,7 +50,7 @@ class News(models.Model):
         super().save(*args, **kwargs)
 
 class SavedNews(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_news')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_news', null=True, blank=True)
     news = models.ForeignKey(News, on_delete=models.CASCADE, related_name='saved_by')
     saved_at = models.DateTimeField(auto_now_add=True)
 

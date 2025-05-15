@@ -91,10 +91,13 @@ def news_by_category(request, category_name):
     serializer = NewsSerializer(news, many=True, context={'request': request})
     return Response(serializer.data)
 
-def get(self, request):
-    user = request.user  # ต้องใช้ permission_classes = [IsAuthenticated]
-    saved = SavedNews.objects.filter(user=user)
-    serializer = SavedNewsSerializer(saved, many=True)
+def get(self, request, date, slug):
+    try:
+        news = News.objects.get(slug=slug)
+    except News.DoesNotExist:
+        return Response({'error': 'ไม่พบข่าว'}, status=404)
+
+    serializer = NewsSerializer(news)
     return Response(serializer.data)
 
 class CustomerView(APIView):
@@ -228,8 +231,28 @@ class SavedNewsListView(APIView):
 
     def get(self, request):
         news = SavedNews.objects.all()
-        serializer = SavedNewsSerializer(news, many=True)
+        serializer = SavedNewsSerializer(news, many=True, context={'request': request})  # เพิ่ม context
         return Response(serializer.data)
+    
+    def post(self, request):
+        news_id = request.data.get('news_id')
+
+        if not news_id:
+            return Response({'error': 'news_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            news = News.objects.get(id=news_id)
+        except News.DoesNotExist:
+            return Response({'error': 'ข่าวไม่พบ'}, status=status.HTTP_404_NOT_FOUND)
+
+        # ตรวจสอบว่ามี user หรือไม่
+        if not request.user or not request.user.is_authenticated:
+            return Response({'error': 'กรุณาเข้าสู่ระบบก่อนบันทึกข่าว'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # สร้าง SavedNews พร้อม user
+        saved = SavedNews.objects.create(news=news, user=request.user)
+        serializer = SavedNewsSerializer(saved, context={'request': request})  # เพิ่ม context
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class SavedNewsDetailView(APIView):
     def delete(self, request, pk):

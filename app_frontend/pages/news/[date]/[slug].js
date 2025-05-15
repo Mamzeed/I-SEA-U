@@ -19,11 +19,10 @@ export default function NewsDetailPage() {
         .then((res) => res.json())
         .then((data) => {
           setNews(data);
-          // ตรวจสอบว่า data.comments เป็นอาร์เรย์
           if (Array.isArray(data.comments)) {
             setComments(data.comments);
           } else {
-            setComments([]); // หากไม่มีคอมเมนต์หรือข้อมูลผิดปกติ ให้ตั้งเป็นอาร์เรย์เปล่า
+            setComments([]);
           }
           setLoading(false);
         })
@@ -38,7 +37,7 @@ export default function NewsDetailPage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:3342/api/news/like/${slug}`, {
-        method: 'POST',  // ใช้ POST แทน GET
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -56,8 +55,32 @@ export default function NewsDetailPage() {
     }
   };
 
-  const toggleBookmark = () => {
-    setBookmarked((prev) => !prev);
+  // ฟังก์ชันสำหรับการบันทึกข่าว
+  const handleSaveNews = async () => {
+    if (!news || !news.id) {
+      alert("เกิดข้อผิดพลาด: ข่าวนี้ไม่มี ID");
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:3342/api/saved-news/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ news_id: news.id }),
+      });
+
+      if (res.ok) {
+        router.push('/keep');
+      } else {
+        const data = await res.json();
+        alert(`เกิดข้อผิดพลาด: ${data.error || "ไม่สามารถบันทึกข่าวได้"}`);
+      }
+    } catch (err) {
+      console.error('Save error:', err);
+      alert("เกิดข้อผิดพลาด: ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+    }
   };
 
   const handleAddComment = () => {
@@ -117,8 +140,8 @@ export default function NewsDetailPage() {
               {liked ? '❤️' : '🤍'}
             </button>
 
-            <button onClick={toggleBookmark} className="text-2xl hover:scale-110 transition">
-              {bookmarked ? '📤' : '📥'}
+            <button onClick={handleSaveNews} className="text-2xl hover:scale-110 transition">
+              📥 {/* ปุ่มบันทึกข่าว */}
             </button>
             <p className="ml-2 text-black">ความคิดเห็น ({comments ? comments.length : 0})</p>
           </div>

@@ -72,7 +72,6 @@ class NewsSerializer(serializers.ModelSerializer):
             return obj.saved_by.filter(user=request.user).exists()
         return False
 
-
 class SavedNewsSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     news_title = serializers.CharField(source='news.title', read_only=True)
