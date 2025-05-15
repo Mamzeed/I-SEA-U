@@ -58,7 +58,7 @@ urlpatterns = [
     path('api/news-likes/by-slug/<slug:slug>/', NewsLikeBySlugView.as_view(), name='newslike_by_slug'),
 
     # Optional: Public news pages (non-API)
-    path('news/', NewsListView.as_view(), name='news_list'),
+    # path('news/', NewsListView.as_view(), name='news_list'),
     path('news/<str:category_name>/', NewsListView.as_view(), name='news_list_by_category'),
 ]
 
