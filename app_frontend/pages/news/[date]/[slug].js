@@ -15,7 +15,7 @@ export default function NewsDetailPage() {
 
   useEffect(() => {
     if (router.isReady && date && slug) {
-      fetch(`http://localhost:3342/api/news/${date}/${slug}/`)
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/${date}/${slug}/`)
         .then((res) => res.json())
         .then((data) => {
           setNews(data);
@@ -36,7 +36,7 @@ export default function NewsDetailPage() {
   const toggleLike = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3342/api/news/like/${slug}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/like/${slug}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,7 +63,7 @@ export default function NewsDetailPage() {
     }
 
     try {
-      const res = await fetch('http://localhost:3342/api/saved-news/', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/saved-news/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export default function NewsDetailPage() {
       <div className="p-6 space-y-10 max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold text-black">{news.title}</h1>
         <img
-          src={`http://localhost:3342${news.image}`}
+          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${news.image}`}
           alt={news.title}
           className="rounded-xl w-full object-cover h-[400px]"
         />

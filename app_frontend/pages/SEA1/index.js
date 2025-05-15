@@ -18,7 +18,7 @@ export default function SEA1() {
       return;
     }
 
-    fetch('http://localhost:3342/api/news/category/Marineenvironment/', {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/category/Marineenvironment/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,  // ส่ง JWT Token ไปใน headers

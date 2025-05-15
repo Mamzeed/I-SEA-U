@@ -10,7 +10,7 @@ export default function SavedNewsPage() {
 
   // ดึงข่าวที่บันทึกไว้จาก backend
   useEffect(() => {
-    fetch('http://localhost:3342/api/saved-news/')
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/saved-news/`)
       .then((res) => {
         if (!res.ok) throw new Error('ไม่สามารถโหลดข่าวที่บันทึกได้');
         return res.json();
@@ -26,7 +26,7 @@ export default function SavedNewsPage() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:3342/api/saved-news/${id}/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/saved-news/${id}/`, {
         method: 'DELETE',
         // ✅ ไม่ต้องใส่ headers.Authorization แล้ว
         headers: {

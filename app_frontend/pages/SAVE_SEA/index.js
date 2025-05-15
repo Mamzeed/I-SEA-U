@@ -7,7 +7,7 @@ export default function ConservationActivities() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:3342/api/conservation-activities/')
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/conservation-activities/`)
       .then((res) => {
         if (!res.ok) {
           throw new Error('Failed to fetch activities');

@@ -2,8 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function ProfilePage() {
   const router = useRouter();
   const { username } = router.query;
@@ -22,7 +20,7 @@ export default function ProfilePage() {
         const token = localStorage.getItem('jwt_access');
         if (!token) throw new Error('ไม่พบ token ใน localStorage');
 
-        const res = await fetch(`${API_URL}/api/public-profile/${username}/`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/public-profile/${username}/`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
