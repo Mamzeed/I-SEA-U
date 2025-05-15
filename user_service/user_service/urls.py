@@ -13,6 +13,10 @@ from user_management.views import (
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
+
+def root_redirect(request):
+    return redirect('news_list')
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
@@ -24,7 +28,7 @@ router.register(r'conservation-methods', ConservationMethodViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name='home'),  # root URL
+    path('', root_redirect, name='root'),  # root URL
     # Django admin
     path('admin/', admin.site.urls),
 
