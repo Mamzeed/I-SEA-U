@@ -78,7 +78,7 @@ export default function HomePage() {
 
       {/* ปุ่มหมวดหมู่ข่าว */}
       <div className="flex flex-wrap justify-center gap-6 mt-8 px-6">
-        {[{ href: "/SEA1", label: "Marine Environment" },
+        {[{ href: "/SEA1", label: "MarinSe Environment" },
           { href: "/SEA2", label: "Marine Disaster" },
           { href: "/SEA3", label: "Maritime Crime" },
           { href: "/SAVE_SEA", label: "Marine Conservation Activities" }
