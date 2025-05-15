@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function LoginPage() {
   const [isClient, setIsClient] = useState(false);
 
@@ -12,7 +14,7 @@ export default function LoginPage() {
     event.preventDefault();
     const formData = new FormData(event.target);
 
-    const response = await fetch('http://127.0.0.1:3342/api/token/', {
+    const response = await fetch(`${API_URL}/api/token/`, {
       method: 'POST',
       body: formData,
     });

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Signup() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -45,7 +47,7 @@ export default function Signup() {
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:3342/api/register/", {
+      const response = await fetch(`${API_URL}/api/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

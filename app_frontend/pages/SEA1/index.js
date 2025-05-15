@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function SEA1() {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,7 @@ export default function SEA1() {
       return;
     }
 
-    fetch('http://localhost:3342/api/news/category/Marineenvironment/', {
+    fetch(`${API_URL}/api/news/category/Marineenvironment/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,  // ส่ง JWT Token ไปใน headers
