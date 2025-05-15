@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function ConservationActivities() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/conservation-activities/`)
+    fetch('http://localhost:3342/api/conservation-activities/')
       .then((res) => {
         if (!res.ok) {
           throw new Error('Failed to fetch activities');

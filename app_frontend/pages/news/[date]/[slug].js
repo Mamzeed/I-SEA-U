@@ -2,8 +2,6 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function NewsDetailPage() {
   const router = useRouter();
   const { date, slug } = router.query;
@@ -17,11 +15,15 @@ export default function NewsDetailPage() {
 
   useEffect(() => {
     if (router.isReady && date && slug) {
-      fetch(`${API_URL}/api/news/${date}/${slug}/`)
+      fetch(`http://localhost:3342/api/news/${date}/${slug}/`)
         .then((res) => res.json())
         .then((data) => {
           setNews(data);
-          setComments(Array.isArray(data.comments) ? data.comments : []);
+          if (Array.isArray(data.comments)) {
+            setComments(data.comments);
+          } else {
+            setComments([]);
+          }
           setLoading(false);
         })
         .catch((err) => {
@@ -34,7 +36,7 @@ export default function NewsDetailPage() {
   const toggleLike = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/news/like/${slug}`, {
+      const res = await fetch(`http://localhost:3342/api/news/like/${slug}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,7 +44,8 @@ export default function NewsDetailPage() {
       });
 
       const data = await res.json();
-      if (data?.liked !== undefined) {
+
+      if (data && data.liked !== undefined) {
         setLiked(data.liked);
       } else {
         console.error("ข้อมูลที่ส่งกลับจาก API ไม่ถูกต้อง");
@@ -52,19 +55,18 @@ export default function NewsDetailPage() {
     }
   };
 
+  // ฟังก์ชันสำหรับการบันทึกข่าว
   const handleSaveNews = async () => {
-    if (!news?.id) {
+    if (!news || !news.id) {
       alert("เกิดข้อผิดพลาด: ข่าวนี้ไม่มี ID");
       return;
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/saved-news/`, {
+      const res = await fetch('http://localhost:3342/api/saved-news/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ news_id: news.id }),
       });
@@ -85,9 +87,8 @@ export default function NewsDetailPage() {
     if (commentText.trim()) {
       const newComment = {
         id: Date.now(),
-        user: 'คุณ', // สามารถเปลี่ยนเป็นชื่อผู้ใช้จริงในอนาคต
+        user: 'คุณ', // สามารถแก้ไขตามชื่อผู้ใช้งานจริง
         text: commentText,
-        profile: '/default-profile.png',
       };
       setComments([...comments, newComment]);
       setCommentText('');
@@ -119,7 +120,7 @@ export default function NewsDetailPage() {
       <div className="p-6 space-y-10 max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold text-black">{news.title}</h1>
         <img
-          src={news.image.startsWith('http') ? news.image : `${API_URL}${news.image}`}
+          src={`http://localhost:3342${news.image}`}
           alt={news.title}
           className="rounded-xl w-full object-cover h-[400px]"
         />
@@ -140,9 +141,9 @@ export default function NewsDetailPage() {
             </button>
 
             <button onClick={handleSaveNews} className="text-2xl hover:scale-110 transition">
-              📥
+              📥 {/* ปุ่มบันทึกข่าว */}
             </button>
-            <p className="ml-2 text-black">ความคิดเห็น ({comments.length})</p>
+            <p className="ml-2 text-black">ความคิดเห็น ({comments ? comments.length : 0})</p>
           </div>
 
           {/* Comment Form */}
@@ -164,7 +165,7 @@ export default function NewsDetailPage() {
           </div>
 
           {/* แสดงความคิดเห็น */}
-          {comments.length > 0 ? (
+          {Array.isArray(comments) && comments.length > 0 ? (
             comments.map((comment) => (
               <div key={comment.id} className="bg-gray-100 rounded-xl p-4 shadow mb-3 flex items-start gap-4">
                 <img

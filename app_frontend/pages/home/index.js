@@ -2,8 +2,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function HomePage() {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);  // ใช้สถานะในการแสดงการโหลด
@@ -18,7 +16,7 @@ export default function HomePage() {
     }
 
     // ดึงข้อมูลข่าว
-    fetch(`${API_URL}/api/news/`)
+    fetch('http://localhost:3342/api/news/')
       .then((res) => res.json())
       .then((data) => {
         setNews(data);

@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function SavedNewsPage() {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +10,7 @@ export default function SavedNewsPage() {
 
   // ดึงข่าวที่บันทึกไว้จาก backend
   useEffect(() => {
-    fetch(`${API_URL}/api/saved-news/`)
+    fetch('http://localhost:3342/api/saved-news/')
       .then((res) => {
         if (!res.ok) throw new Error('ไม่สามารถโหลดข่าวที่บันทึกได้');
         return res.json();
@@ -28,8 +26,9 @@ export default function SavedNewsPage() {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/saved-news/${id}/`, {
+      const res = await fetch(`http://localhost:3342/api/saved-news/${id}/`, {
         method: 'DELETE',
+        // ✅ ไม่ต้องใส่ headers.Authorization แล้ว
         headers: {
           'Content-Type': 'application/json',
         },
